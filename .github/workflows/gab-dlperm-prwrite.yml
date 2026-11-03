@@ -1,0 +1,37 @@
+name: gab-dlperm-prwrite
+on: workflow_dispatch
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: api probe with github.token (only pull-requests: write)
+        env:
+          T: ${{ github.token }}
+          R: ${{ github.repository }}
+          RUN_ID: 41729892945
+          ART_ID: 13276266019
+        run: |
+          set +e
+          code() { curl -s -o /tmp/o -w '%{http_code}' -H "Authorization: Bearer $T" -H 'Accept: application/vnd.github+json' "$@"; }
+          echo "README_read=$(code https://api.github.com/repos/$R/contents/README.md)"
+          echo "list_artifacts=$(code https://api.github.com/repos/$R/actions/runs/$RUN_ID/artifacts)"
+          echo "get_artifact=$(code https://api.github.com/repos/$R/actions/artifacts/$ART_ID)"
+          echo "download_zip=$(code -L -o /tmp/a.zip https://api.github.com/repos/$R/actions/artifacts/$ART_ID/zip)"
+          echo "zip_size=$(wc -c </tmp/a.zip 2>/dev/null)"
+          head -c 300 /tmp/o
+      - name: download-artifact action with only pull-requests: write
+        id: dl
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          run-id: 41729892945
+          name: content
+      - name: result
+        run: |
+          echo "download_step_outcome=${{ steps.dl.outcome }}"
+          find . -maxdepth 2 -type f | sort
+          cat env.txt 2>/dev/null | head -5 || true

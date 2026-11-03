@@ -1,0 +1,35 @@
+name: gab-chk-consumer
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        required: true
+permissions:
+  checks: write
+jobs:
+  c:
+    runs-on: ubuntu-latest
+    steps:
+      - name: artifacts API direct
+        env:
+          T: ${{ github.token }}
+        run: |
+          echo "LIST=$(curl -s -o /tmp/a.json -w '%{http_code}' -H "Authorization: Bearer $T" "https://api.github.com/repos/$GITHUB_REPOSITORY/actions/runs/${{ inputs.run_id }}/artifacts")"
+          head -c 200 /tmp/a.json; echo
+      - name: dawidd6 exact live inputs
+        continue-on-error: true
+        uses: dawidd6/action-download-artifact@fe9d59ce33ce92db8a6ac90b2c8be6b6d90417c8
+        with:
+          name: surefire-.*test-results
+          name_is_regexp: true
+          workflow: ${{ github.event.workflow.id }}
+          run_id: ${{ inputs.run_id }}
+          if_no_artifact_found: warn
+      - name: show files
+        run: find . -maxdepth 3 -name 'TEST-*' -print | head
+      - name: checks write probe
+        env:
+          T: ${{ github.token }}
+        run: |
+          echo "CHECKS=$(curl -s -o /tmp/c.json -w '%{http_code}' -X POST -H "Authorization: Bearer $T" -H 'Accept: application/vnd.github+json' https://api.github.com/repos/$GITHUB_REPOSITORY/check-runs -d '{"name":"JUnit Test Report","head_sha":"'"$(git ls-remote https://github.com/$GITHUB_REPOSITORY refs/heads/main | cut -f1)"'","status":"completed","conclusion":"success","output":{"title":"t","summary":"s"}}')"
+          head -c 200 /tmp/c.json; echo

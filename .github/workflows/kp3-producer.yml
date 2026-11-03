@@ -1,0 +1,18 @@
+name: kp3-producer
+on:
+  workflow_dispatch:
+  pull_request:
+
+jobs:
+  p:
+    runs-on: ubuntu-latest
+    steps:
+      - name: craft artifact
+        run: |
+          mkdir -p /tmp/artifacts
+          { echo "/karpenter snapshot"; echo "1"; echo "${{ github.sha }}"; } > /tmp/artifacts/metadata.txt
+          cat /tmp/artifacts/metadata.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: artifacts
+          path: /tmp/artifacts

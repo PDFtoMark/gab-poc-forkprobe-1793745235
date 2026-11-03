@@ -1,0 +1,71 @@
+name: kp3-consumer
+on:
+  workflow_run:
+    workflows: [kp3-producer]
+    types: [completed]
+
+jobs:
+  # Shape of website-preview.yaml: contents: read present, actions: read absent
+  noactions:
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: write
+      statuses: write
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: list artifacts WITHOUT actions perm (public repo)
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd
+        with:
+          script: |
+            try {
+              const r = await github.rest.actions.listWorkflowRunArtifacts({
+                owner: context.repo.owner, repo: context.repo.repo,
+                run_id: context.payload.workflow_run.id});
+              console.log("NOACTIONS_PUBLIC_OK count=" + r.data.artifacts.length + " id=" + r.data.artifacts[0].id);
+            } catch (e) {
+              console.log("NOACTIONS_PUBLIC_ERR " + e.status + " " + e.message);
+            }
+
+  # Control: actions: read present
+  withactions:
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+      pull-requests: write
+      statuses: write
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: list artifacts WITH actions perm
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd
+        with:
+          script: |
+            try {
+              const r = await github.rest.actions.listWorkflowRunArtifacts({
+                owner: context.repo.owner, repo: context.repo.repo,
+                run_id: context.payload.workflow_run.id});
+              console.log("WITHACTIONS_PUBLIC_OK count=" + r.data.artifacts.length + " id=" + r.data.artifacts[0].id);
+            } catch (e) {
+              console.log("WITHACTIONS_PUBLIC_ERR " + e.status + " " + e.message);
+            }
+
+  # Shape of snapshot-pr.yaml: no contents: read, no actions: read
+  nocontents:
+    permissions:
+      id-token: write
+      pull-requests: write
+      statuses: write
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout without contents read (public repo)
+        id: co
+        continue-on-error: true
+        uses: actions/checkout@v6
+      - name: report checkout outcome
+        run: echo "CHECKOUT_NOCONTENTS_OUTCOME=${{ steps.co.outcome }}"

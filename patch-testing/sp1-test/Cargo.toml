@@ -1,0 +1,8 @@
+[package]
+name = "sp1-test"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "post-to-github"
+path = "bin/post_to_github.rs"

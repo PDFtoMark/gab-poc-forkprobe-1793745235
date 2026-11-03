@@ -1,0 +1,7 @@
+name: KP Marker
+description: benign main-branch version
+runs:
+  using: "composite"
+  steps:
+    - shell: bash
+      run: echo "KP_MAIN_TREE_ACTION_RAN"

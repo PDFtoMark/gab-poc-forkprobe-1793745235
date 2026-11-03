@@ -7,7 +7,7 @@ jobs:
     permissions:
       pull-requests: write
     steps:
-      - name: api probe with github.token (only pull-requests: write)
+      - name: 'api probe with github.token (only pull-requests: write)'
         env:
           T: ${{ github.token }}
           R: ${{ github.repository }}
@@ -22,7 +22,7 @@ jobs:
           echo "download_zip=$(code -L -o /tmp/a.zip https://api.github.com/repos/$R/actions/artifacts/$ART_ID/zip)"
           echo "zip_size=$(wc -c </tmp/a.zip 2>/dev/null)"
           head -c 300 /tmp/o
-      - name: download-artifact action with only pull-requests: write
+      - name: 'download-artifact action with only pull-requests: write'
         id: dl
         continue-on-error: true
         uses: actions/download-artifact@v4

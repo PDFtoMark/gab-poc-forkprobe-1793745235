@@ -1,0 +1,47 @@
+name: Publish Test Results (pipsym PoC)
+on:
+  workflow_run:
+    workflows: ["Build CI"]
+    types:
+      - completed
+permissions: {}
+jobs:
+  test-results:
+    name: Publish Test Results
+    if: github.event.workflow_run.conclusion != 'skipped'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      checks: write
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Download and Extract Artifacts
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p artifacts && cd artifacts
+          artifacts_url=${{ github.event.workflow_run.artifacts_url }}
+          gh api "$artifacts_url" -q '.artifacts[] | [.name, .archive_download_url] | @tsv' | while read artifact
+          do
+            IFS=$'\t' read name url <<< "$artifact"
+            echo "artifact=[$name]"
+            gh api $url > "$name.zip"
+            unzip -d "$name" "$name.zip"
+          done
+          echo "--- artifacts dir ---"; ls -la
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action/composite@v2.10.0
+        with:
+          commit: ${{ github.event.workflow_run.head_sha }}
+          check_name: Test Results
+          event_file: artifacts/event-file-ubuntu-latest/event.json
+          event_name: ${{ github.event.workflow_run.event }}
+          files: "artifacts/**/*.xml"
+      - name: Proof of code execution
+        if: always()
+        run: |
+          echo "--- pip shadow marker ---"
+          cat /tmp/pip_pwn_marker.txt 2>&1 || echo NO_MARKER
+          echo "--- token captured in action publish step ---"
+          cat "$GITHUB_WORKSPACE/token_proof.txt" 2>&1 || echo NO_TOKEN_PROOF

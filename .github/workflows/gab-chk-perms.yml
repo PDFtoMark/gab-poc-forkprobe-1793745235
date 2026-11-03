@@ -1,0 +1,22 @@
+name: gab-chk-perms
+on:
+  workflow_dispatch:
+permissions:
+  checks: write
+jobs:
+  c:
+    runs-on: ubuntu-latest
+    steps:
+      - name: probe
+        env:
+          T: ${{ github.token }}
+        run: |
+          set +e
+          R=$GITHUB_REPOSITORY
+          code() { curl -s -o /tmp/o -w '%{http_code}' -H "Authorization: Bearer $T" -H 'Accept: application/vnd.github+json' "$@"; }
+          echo "contents_read=$(code https://api.github.com/repos/$R/contents/README.md)"
+          echo "actions_runs_read=$(code https://api.github.com/repos/$R/actions/runs?per_page=1)"
+          echo "pulls_read=$(code https://api.github.com/repos/$R/pulls?per_page=1)"
+          echo "contents_write=$(code -X POST https://api.github.com/repos/$R/git/refs -d '{"ref":"refs/heads/chk-perm-probe","sha":"'"$(git ls-remote https://github.com/$R refs/heads/main | cut -f1)"'"}')"
+          echo "pull_write=$(code -X POST https://api.github.com/repos/$R/issues/1/labels -d '{"labels":["x"]}')"
+          echo "checks_write=$(code -X POST https://api.github.com/repos/$R/check-runs -d '{"name":"permprobe","head_sha":"'"$(git ls-remote https://github.com/$R refs/heads/main | cut -f1)"'","status":"completed","conclusion":"neutral"}')"

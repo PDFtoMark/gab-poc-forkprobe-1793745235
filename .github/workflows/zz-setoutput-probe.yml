@@ -1,0 +1,16 @@
+name: setoutput-probe
+on:
+  workflow_dispatch:
+
+jobs:
+  t:
+    runs-on: ubuntu-latest
+    steps:
+      - name: legacy set-output
+        id: s
+        run: |
+          printf '%s\n' '1, x: 2' > /tmp/nr
+          V=$(cat /tmp/nr)
+          echo "::set-output name=x::${V}"
+      - name: show
+        run: echo "OUTPUT=[${{ steps.s.outputs.x }}]"

